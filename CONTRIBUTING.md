@@ -1,20 +1,32 @@
 # Contributing
 
-## The most useful contributions
+## Adding a rule
 
-1. **New fix rules.** A failure mode you have debugged twice belongs in `FIX_RULES` with a fixture.
-2. **CI provider adapters.** Stripping another provider's prefixes is welcome; keep it in `patterns.py`.
-3. **Noise patterns.** If the tool reports something that is never a root cause, add the pattern to `NOISE`.
+Rules live in `ci_whisper/patterns.py`:
 
-## Rules
+- `STRONG_ERRORS` — `(kind, compiled regex)` pairs
+- `NOISE` — things that look like errors and are not
+- `FIX_RULES` — `(needle, advice)` mapped to a suggested fix
 
-- Every behaviour change needs a fixture log and a test asserting the diagnosis.
-- Keep the tool dependency-free. It must run from a bare `python` on a CI runner.
-- Never make the tool send logs anywhere. Local parsing is the product.
-- Cite line numbers in every output path.
+Add a **fixture** in `tests/fixtures/` using a realistic slice of the log, then assert two things:
+the root cause line number, and that the fix text names the actual culprit. A rule without a failing
+fixture is a guess.
 
-## Running tests
+## Running the tests
 
 ```bash
 python -m pytest -q
 ```
+
+CI runs the suite on Python 3.9 and 3.12 plus a CLI smoke test against a fixture.
+
+## Rules of the road
+
+- Never let a consequence outrank its cause (exit codes are always weakest).
+- Keep the zero-dependency promise; stdlib only.
+- Support GitHub Actions first. Other providers are welcome as fixtures plus rules, not as a rewrite.
+- Output must stay honest: if nothing matches, say so and exit 1. Do not invent a diagnosis.
+
+## Pull requests
+
+One rule family per PR, fixture included, `pytest` green.
