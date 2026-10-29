@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.1.1 - 2026-10-29
+
+- First PyPI release (`pipx install ci-whisper`).
+- Go support: `--- FAIL: TestX` is now a first-class signal, an earlier compiler
+  error still outranks a later test failure, and the failing package is recovered
+  from the trailing summary. Contributed by @Sonike in #3.
+- Release pipeline via PyPI trusted publishing (no stored token), which refuses to
+  publish when the tag and pyproject version disagree.
+- First-time contributor workflow runs are auto-approved, except PRs that touch CI.
 ## v0.1.0 - 2026-10-29
 
 - Read a failed CI log from stdin, `--file`, or `--gh <run-id>` and report the
