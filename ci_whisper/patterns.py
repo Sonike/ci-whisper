@@ -7,6 +7,9 @@ import re
 ANSI_RE = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
 TIMESTAMP_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z\s?")
 JOB_PREFIX_RE = re.compile(r"^[^\t]*\t(?=[a-z-]+\t)")
+GO_TEST_FAILURE_RE = re.compile(r"^--- FAIL: (\S+) \(\d+(?:\.\d+)?s\)$")
+GO_PACKAGE_FAILURE_RE = re.compile(r"^FAIL\s+(\S+)\s+(?:\d+(?:\.\d+)?s|\[build failed\])(?:\s|$)")
+GO_COMPILER_ERROR_RE = re.compile(r"^\S+\.go:\d+:\d+:\s+\S")
 
 # Errors that are almost always the real cause.
 STRONG_ERRORS: list[tuple[str, re.Pattern[str]]] = [
@@ -15,6 +18,7 @@ STRONG_ERRORS: list[tuple[str, re.Pattern[str]]] = [
     ("npm-error", re.compile(r"^npm ERR!")),
     ("github-error", re.compile(r"^##\[error\]")),
     ("compiler-error", re.compile(r"\berror(\[E\d+\])?:")),
+    ("go-test-failure", GO_TEST_FAILURE_RE),
     ("test-failure", re.compile(r"^(FAILED|FAIL|✕|×)\b")),
     ("fatal", re.compile(r"^fatal:")),
     ("exception", re.compile(r"^[A-Za-z_.]+(Error|Exception):\s")),

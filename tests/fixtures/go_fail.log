@@ -1,0 +1,8 @@
+2026-10-29T08:01:02.1234567Z ##[group]Run go test ./...
+2026-10-29T08:01:02.2000000Z ok  	example.com/shop/cache	0.003s
+2026-10-29T08:01:03.1000000Z --- FAIL: TestTotal (0.00s)
+2026-10-29T08:01:03.1000000Z     cart_test.go:12: total = 12, want 10
+2026-10-29T08:01:03.1000000Z FAIL
+2026-10-29T08:01:03.1000000Z FAIL	example.com/shop/cart	0.005s
+2026-10-29T08:01:03.2000000Z FAIL
+2026-10-29T08:01:03.3000000Z ##[error]Process completed with exit code 1.

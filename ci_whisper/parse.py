@@ -10,6 +10,9 @@ from .patterns import (
     ANSI_RE,
     CAUSAL_HINTS,
     FIX_RULES,
+    GO_COMPILER_ERROR_RE,
+    GO_PACKAGE_FAILURE_RE,
+    GO_TEST_FAILURE_RE,
     NOISE,
     STRONG_ERRORS,
     TIMESTAMP_RE,
@@ -78,12 +81,16 @@ def classify(line: str) -> tuple[str, int] | None:
     text = line.strip()
     if not text or is_noise(text):
         return None
+    # Go compiler diagnostics have no "error:" prefix. Keep indentation here:
+    # a test's indented source location is context, not a compiler error.
+    if GO_COMPILER_ERROR_RE.search(line):
+        return "compiler-error", 3
     for kind, pattern in STRONG_ERRORS:
         if pattern.search(text):
             # The exception line is the cause; the Traceback header is only its preface.
             if kind in {"module-not-found", "exception"}:
                 strength = 4
-            elif kind in {"python-traceback", "test-failure", "compiler-error"}:
+            elif kind in {"python-traceback", "test-failure", "go-test-failure", "compiler-error"}:
                 strength = 3
             elif kind in {"npm-error", "github-error"}:
                 strength = 2
@@ -154,10 +161,26 @@ def build_chain(root: Hit | None, hits: list[Hit], lines: list[str]) -> list[Hit
 TEST_ID_RE = re.compile(r"^(?:FAILED\s+)?(?P<test>[\w./-]+\.py::[\w:.\[\]-]+)")
 
 
-def suggest_fix(root: Hit | None) -> str:
+def suggest_fix(root: Hit | None, lines: list[str] | None = None) -> str:
     """Map the root cause to a concrete first action."""
     if root is None:
         return "No error signal found. The log may be truncated or the failure is a cancelled step."
+    if root.kind == "go-test-failure":
+        match = GO_TEST_FAILURE_RE.search(root.text)
+        if match:
+            package = ""
+            for line in (lines or [])[root.line_no:]:
+                text = line.strip()
+                if text.startswith(("##[group]", "##[endgroup]", "Run ")):
+                    break
+                result = GO_PACKAGE_FAILURE_RE.search(text)
+                if result:
+                    package = f" in package {result.group(1)}"
+                    break
+            return (
+                f"Go test {match.group(1)}{package} failed. Re-run it alone and inspect "
+                "its assertion output, then fix the expectation or the code it exercises."
+            )
     if root.kind == "test-failure":
         match = TEST_ID_RE.search(root.text)
         if match:
@@ -185,7 +208,7 @@ def diagnose(raw: str) -> Diagnosis:
     return Diagnosis(
         root_cause=root,
         chain=build_chain(root, hits, lines),
-        fix=suggest_fix(root),
+        fix=suggest_fix(root, lines),
         phase=find_phase(lines),
         scanned=len(lines),
         signals=len(hits),
