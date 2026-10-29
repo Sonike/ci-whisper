@@ -1,0 +1,4 @@
+warning: unused variable 'x' [-Wunused-variable]
+3 warnings generated
+npm WARN optional SKIPPING OPTIONAL DEPENDENCY: fsevents
+Tests: 12 passed, 0 failed

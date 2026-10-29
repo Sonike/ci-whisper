@@ -1,0 +1,13 @@
+2026-10-29T08:01:02.1234567Z ##[group]Run pytest -x
+2026-10-29T08:01:02.2000000Z running pytest
+2026-10-29T08:01:09.1000000Z =========================== test session starts ============================
+2026-10-29T08:01:09.1000000Z collected 41 items
+2026-10-29T08:01:11.4000000Z tests/test_parser.py ...........                                     [ 26%]
+2026-10-29T08:01:12.9000000Z tests/test_render.py ....F                                            [ 38%]
+2026-10-29T08:01:12.9000000Z =================================== FAILURES ===================================
+2026-10-29T08:01:12.9000000Z _____________________________ test_render_header ______________________________
+2026-10-29T08:01:12.9000000Z     def test_render_header():
+2026-10-29T08:01:12.9000000Z >       assert render_header("a") == "A"
+2026-10-29T08:01:12.9000000Z E       AssertionError: assert 'a' == 'A'
+2026-10-29T08:01:13.0000000Z FAILED tests/test_render.py::test_render_header - AssertionError
+2026-10-29T08:01:13.1000000Z ##[error]Process completed with exit code 1.

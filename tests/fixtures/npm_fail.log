@@ -1,0 +1,10 @@
+##[group]Run npm ci
+npm ci
+npm WARN deprecated har-validator@5.1.5: this library is no longer supported
+npm ERR! code ERESOLVE
+npm ERR! ERESOLVE unable to resolve dependency tree
+npm ERR! While resolving: app@1.0.0
+npm ERR! Found: react@18.2.0
+npm ERR! node_modules/react
+npm ERR!   react@"^18.2.0" from the root project
+##[error]Process completed with exit code 1.

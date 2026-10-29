@@ -1,0 +1,7 @@
+##[group]Run python scripts/build.py
+python scripts/build.py
+Traceback (most recent call last):
+  File "scripts/build.py", line 4, in <module>
+    import yaml
+ModuleNotFoundError: No module named 'yaml'
+##[error]Process completed with exit code 1.
