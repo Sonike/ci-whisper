@@ -1,0 +1,84 @@
+Metadata-Version: 2.4
+Name: ci-whisper
+Version: 0.1.0
+Summary: Read a failed CI log and get the first real error, its causal chain, and a fix.
+Author: mgkvibez
+License: MIT
+Keywords: ci,github-actions,logs,debugging,developer-tools,agents
+Classifier: Development Status :: 3 - Alpha
+Classifier: Environment :: Console
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Topic :: Software Development :: Quality Assurance
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Provides-Extra: dev
+Requires-Dist: pytest>=8; extra == "dev"
+Dynamic: license-file
+
+# ci-whisper
+
+**Read a failed CI log. Get the first real error, its causal chain, and a fix.** One paragraph instead of ten thousand lines of noise.
+
+[![ci](https://github.com/mgkvibez/ci-whisper/actions/workflows/ci.yml/badge.svg)](https://github.com/mgkvibez/ci-whisper/actions/workflows/ci.yml)
+[![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![python](https://img.shields.io/badge/python-3.9%2B-blue.svg)](pyproject.toml)
+[![stars](https://img.shields.io/github/stars/mgkvibez/ci-whisper?style=flat&color=yellow)](https://github.com/mgkvibez/ci-whisper/stargazers)
+
+![ci-whisper demo](docs/demo/ci-whisper.svg)
+
+## Install
+
+```bash
+pipx install git+https://github.com/mgkvibez/ci-whisper.git
+```
+
+Until it is on PyPI, install from git. For development: `git clone && pip install -e ".[dev]"`.
+
+## Three ways to use it
+
+```bash
+# 1. The one you will use daily: pipe the failing job log
+gh run view --log-failed | ci-whisper
+
+# 2. From a downloaded log file
+ci-whisper --file /tmp/build.log
+
+# 3. Let it fetch the last failed run of the current repo
+ci-whisper --gh 16977481234
+
+# machine-readable, for a bot or an agent skill
+ci-whisper --file build.log --json
+```
+
+Exit code is `1` when no error signal is found, so you can gate on it.
+
+## Why it exists
+
+A red build hands you 10k lines. The actual cause is line 4, and everything after it is consequence: retries, cascading test failures, the polite `##[error]Process completed with exit code 1`.
+
+Two things go wrong when this hits an agent. It reads the *last* error and fixes a symptom, or it reads the header and summarises nothing. ci-whisper ranks signals so the cause outranks its own consequences, then shows the citations so anyone can check the call.
+
+## How it works
+
+1. **Clean** — strips ANSI and GitHub's `2026-10-29T08:01:02.1234567Z ` timestamp prefix, keeping a line-number map to the original file.
+2. **Scan** — matches a ranked rule set: `ModuleNotFoundError`/`Exception` (4) beat `Traceback`, test failures and compiler errors (3), which beat `npm ERR!` and `##[error]` (2), which beat a bare `exit code 1` (1).
+3. **Root cause** — highest severity, then earliest line. Noise (warnings, deprecations, `0 failed`, download progress) is filtered before ranking.
+4. **Chain** — the chosen line plus the following block: indented continuations, frames, and `caused by` style links.
+5. **Fix** — a rule per failure shape: peer dependency conflict, missing module, permissions, missing path, assertion, timeout, OOM.
+
+No network calls, no LLM, no dependencies.
+
+## Contributing
+
+Read [CONTRIBUTING.md](CONTRIBUTING.md). Tests:
+
+```bash
+python -m pytest -q
+```
+
+## License
+
+MIT. See [LICENSE](LICENSE).
